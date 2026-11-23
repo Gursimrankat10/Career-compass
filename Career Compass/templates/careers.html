@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Explore careers{% endblock %}
+{% block breadcrumb %}Explore jobs{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">A WIDER WORLD OF WORK</p><h1>Find something worth <span>exploring.</span></h1><p class="muted">Browse a growing career catalog. Pick a path to personalize your roadmap and learning tasks.</p></section>
+<form class="career-search panel" method="get" action="{{ url_for('careers') }}"><label class="visually-hidden" for="career-query">Search career titles and descriptions</label><span class="search-icon">⌕</span><input id="career-query" name="q" value="{{ query }}" placeholder="Try “design”, “science”, “health”..." maxlength="100"><label class="visually-hidden" for="career-category">Filter by career category</label><select id="career-category" name="category"><option value="">All areas</option>{% for item in categories %}<option value="{{ item }}" {% if category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select><button class="button button-dark" type="submit">Search <span>⌕</span></button></form>
+<p class="catalog-count">{{ careers|length }} career paths {% if query or category %}match these filters{% else %}to explore{% endif %}</p>
+<section class="career-grid">
+{% for career in careers %}
+<article class="panel career-card"><div class="career-card-top"><span class="career-icon">{{ career.icon }}</span><span class="category-pill">{{ career.category }}</span></div><h2>{{ career.title }}</h2><p class="muted">{{ career.description }}</p><div class="strength-list">{% for strength in career.strengths[:2] %}<span>✦ {{ strength }}</span>{% endfor %}</div><p class="first-step"><strong>Try first:</strong> {{ career.first_step }}</p><form method="post" action="{{ url_for('select_career', career_id=career.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-outline" type="submit">Explore this path <span>↗</span></button></form></article>
+{% else %}
+<div class="panel no-results"><span class="empty-icon">⌕</span><h2>No exact match yet.</h2><p class="muted">Try another search term or view all career areas.</p><a class="text-link" href="{{ url_for('careers') }}">Clear filters <span>→</span></a></div>
+{% endfor %}
+</section>
+<p class="disclaimer">This starter catalog is locally curated and does not scrape or synchronize with job platforms. Role requirements and licensing vary by location; check current local sources.</p>
+{% endblock %}

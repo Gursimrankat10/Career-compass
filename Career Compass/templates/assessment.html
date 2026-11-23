@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Discover your direction{% endblock %}
+{% block breadcrumb %}Discover careers{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">A LITTLE SELF-DISCOVERY</p><h1>What feels like <span>you?</span></h1><p class="muted">There are no right answers. Think about what you enjoy—not only what you have already studied. Rate each statement from “not at all” to “very much.” Your answers stay in your account.</p></section>
+<section class="assessment-progress panel" data-minimum-answers="{{ minimum_answers }}"><div><strong id="answered-count">{{ answered_count }}</strong><span> of {{ questions|length }} answered · <span id="answer-requirement" aria-live="polite">{{ minimum_answers }} needed</span></span></div><div class="progress-track"><span id="assessment-progress-bar" style="width:{{ (answered_count / questions|length * 100)|round|int }}%"></span></div><small>Answer any {{ minimum_answers }} or more. Your results show a rough interest match—not a prediction of success.</small></section>
+<form class="panel assessment-form" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% for question in questions %}
+  <fieldset class="question"><legend><span class="question-number">{{ "%02d"|format(loop.index) }}</span>{{ question.prompt }}</legend><div class="scale" role="radiogroup" aria-label="{{ question.prompt }}">
+    {% for value, label in [(1, "Not at all"), (2, "A little"), (3, "Somewhat"), (4, "A lot"), (5, "Very much")] %}
+    <label class="scale-option"><input type="radio" name="{{ question.id }}" value="{{ value }}" {% if request.form.get(question.id) == value|string %}checked{% endif %}><span class="radio-dot">{{ value }}</span><span class="scale-label">{{ label }}</span></label>
+    {% endfor %}
+  </div></fieldset>
+  {% endfor %}
+  <div class="form-footer"><span class="muted">About 4 minutes · up to {{ questions|length }} questions. Answer any {{ minimum_answers }} to get started; extra answers can make the estimate more informative.</span><button class="button button-dark" type="submit">Show my career matches <span>↗</span></button></div>
+</form>
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% endblock %}

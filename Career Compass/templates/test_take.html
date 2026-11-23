@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}20-minute learning test{% endblock %}
+{% block breadcrumb %}Test in progress{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">{{ career.title if career else "CAREER LEARNING" }} · LEVEL {{ attempt.level }}</p><h1>A little practice, <span>one question at a time.</span></h1><p class="muted">Choose the best answer for each situation. You can submit early; the timer submits at 20 minutes.</p></section>
+<section class="test-timer-panel panel" aria-live="polite"><span>TIME REMAINING</span><strong id="test-timer" data-deadline="{{ deadline }}">20:00</strong><small>Take a breath. Read each question carefully.</small></section>
+<form class="panel test-form" id="learning-test-form" method="post" action="{{ url_for('submit_learning_test', test_id=attempt.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="timed_out" id="test-timed-out" value="0">{% for question in questions %}{% set question_index = loop.index0 %}<fieldset class="test-question"><legend><span class="question-number">{{ "%02d"|format(loop.index) }}</span>{{ question.prompt }}</legend><div class="test-options">{% for option in question.options %}<label><input type="radio" name="question_{{ question_index }}" value="{{ loop.index0 }}" required><span>{{ option }}</span></label>{% endfor %}</div></fieldset>{% endfor %}<div class="test-submit-bar"><span class="muted">Your answers are private to your account.</span><button class="button button-dark" type="submit">Finish and review <span>✓</span></button></div></form>
+<script>
+  (() => {
+    const timer = document.getElementById("test-timer");
+    const form = document.getElementById("learning-test-form");
+    const deadline = Number(timer.dataset.deadline);
+    const update = () => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      timer.textContent = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`;
+      if (remaining === 0) {
+        document.getElementById("test-timed-out").value = "1";
+        form.submit();
+      }
+    };
+    update();
+    window.setInterval(update, 1000);
+  })();
+</script>
+{% endblock %}

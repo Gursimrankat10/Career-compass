@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Career mentor{% endblock %}
+{% block breadcrumb %}Career mentor{% endblock %}
+{% block content %}
+<section class="page-intro">
+  <p class="eyebrow">A THOUGHTFUL PLACE TO START</p>
+  <h1>Let's figure it out <span>together.</span></h1>
+  <p class="muted">Ask about career fit, learning, job preparation, market evidence, or a hypothetical decision. The mentor can walk through assumptions and trade-offs.</p>
+  {% if has_career %}<a class="text-link" href="{{ url_for('career_insights') }}">Review your career's cited market outlook <span>→</span></a>{% endif %}
+</section>
+<section class="panel mentor-panel">
+  <div class="mentor-header">
+    <span class="mentor-avatar">✳</span>
+    <div>
+      <h2>Your career guide</h2>
+      <span class="mentor-status" id="mentor-provider-status" data-meta-available="{{ 'true' if meta_api_available else 'false' }}"><i></i><span id="mentor-provider-label">{% if meta_api_available %}Checking for on-device AI; Meta AI is the server fallback.{% else %}Checking for on-device AI; private local guidance is the fallback.{% endif %}</span></span>
+    </div>
+    <span class="mentor-badge" id="mentor-provider-badge">CAREER MENTOR</span>
+  </div>
+  {% if task_context %}<div class="mentor-task-context"><strong>Today's task:</strong> {{ task_context.title }} · <strong>Finish line:</strong> {{ task_context.deliverable }}</div>{% endif %}
+  <div class="chat-window" aria-live="polite">
+    <div class="chat-message mentor-message"><span class="chat-avatar">✳</span><div class="bubble"><p>Hi there! Career choices can feel like a big question. We can take it one step at a time. What's on your mind?</p></div></div>
+    {% for item in messages %}
+    <div class="chat-message {{ 'user-message' if item.role == 'user' else 'mentor-message' }}">
+      {% if item.role == 'mentor' %}<span class="chat-avatar">✳</span>{% endif %}
+      <div class="bubble">
+        <p>{{ item.message }}</p>
+        {% if item.role == 'mentor' and item.sources %}
+          {% for source in item.sources if source.type == 'browser_ai' %}<p class="muted">Answered with on-device browser AI.</p>{% endfor %}
+          {% if item.sources|selectattr('type', 'equalto', 'url_citation')|list %}<ul class="mentor-citations">{% for source in item.sources if source.type == 'url_citation' %}<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }} ↗</a></li>{% endfor %}</ul>{% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <form class="mentor-form" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if task_id %}<input type="hidden" name="task_id" value="{{ task_id }}">{% endif %}
+    <input type="hidden" name="browser_ai_reply" value="">
+    <label class="visually-hidden" for="message">Your message</label>
+    <input id="message" name="message" maxlength="500" value="{{ prefilled_message }}" placeholder="Share what's on your mind..." required>
+    <button class="button button-dark" type="submit">Send <span>↗</span></button>
+  </form>
+  <p class="mentor-disclaimer" id="mentor-browser-status" role="status" aria-live="polite">Checking whether this browser can run its on-device AI.</p>
+  {% if meta_api_available %}
+  <p class="mentor-disclaimer">Browser AI runs on this device when supported. If unavailable, the server uses Meta AI for your answer. The current question, selected career and market region, related task details, and any cached career-outlook report may be sent to Meta; chat history, questionnaire answers, account details, and progress are not. Meta model and search usage may incur charges.</p>
+  {% else %}
+  <p class="mentor-disclaimer">Browser AI runs on this device when supported; the first use may download a model. If it is unavailable, this server uses its private built-in career guide. Browser AI availability varies by browser and device.</p>
+  {% endif %}
+</section>
+<script id="mentor-browser-context" type="application/json">{{ browser_mentor_context|tojson }}</script>
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+<div class="prompt-row">
+  <span>Try asking:</span>
+  <a href="{{ url_for('mentor') }}" onclick="document.getElementById('message').value='How do I get started building a new skill?';document.getElementById('message').focus();return false;">How do I get started?</a>
+  <a href="{{ url_for('mentor') }}" onclick="document.getElementById('message').value='I feel overwhelmed about choosing a career';document.getElementById('message').focus();return false;">I feel overwhelmed</a>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Daily tasks{% endblock %}
+{% block breadcrumb %}Daily tasks{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">A FRESH DAILY PLAN · {{ plan_date }}</p><h1>Make today <span>count.</span></h1><p class="muted">Each activity has clear steps and a finish line. XP reflects the time and effort involved. Ask your mentor about any task before you begin.</p></section>
+<section class="task-summary panel"><div><span class="eyebrow">TODAY'S PROGRESS</span><h2>{{ completed|length }} <span>/ {{ tasks|length }} tasks complete</span></h2></div><div class="progress-track"><span style="width: {{ (completed|length / tasks|length * 100)|round|int }}%"></span></div><div class="streak-detail">🔥 <strong>{{ progress.streak }}</strong> day streak <span>·</span> {{ progress.xp }} total XP</div><a class="text-link task-test-link" href="{{ url_for('learning_tests') }}">Test what you've learned <span>→</span></a></section>
+<section class="task-list" data-plan-date="{{ plan_date }}">
+  {% for task in tasks %}
+  <article class="panel task-card {% if task.id in completed %}task-completed{% endif %}"><span class="task-icon">{{ task.icon }}</span><div class="task-copy"><span class="tag">{{ task.duration }} · +{{ task.xp }} XP</span><h2>{{ task.title }}</h2><p class="muted">{{ task.description }}</p><ol class="task-steps">{% for step in task.steps %}<li>{{ step }}</li>{% endfor %}</ol><p class="task-deliverable"><strong>Finish line:</strong> {{ task.deliverable }}</p>{% if career %}<small>Personalized for your {{ career.title }} direction</small>{% endif %}<a class="task-mentor-link" href="{{ url_for('mentor', task=task.id) }}"><span>✳</span> Ask your mentor about this task</a></div><div class="task-action">{% if task.id in completed %}<span class="completed-label">✓ Done for today</span>{% else %}<form method="post" action="{{ url_for('complete_task', task_id=task.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-outline" type="submit">Mark complete <span>✓</span></button></form>{% endif %}</div></article>
+  {% endfor %}
+</section>
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% endblock %}

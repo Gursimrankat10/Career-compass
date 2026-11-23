@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set user = current_user() %}
+  {% set ui_theme = user.theme if user else browser_theme %}
+  {% set ui_accent = user.accent_color if user and user.accent_color in accent_palettes else browser_accent_color %}
+  {% set palette = accent_palettes[ui_accent] %}
+  <meta name="theme-color" content="{% if ui_theme == 'dark' %}#101010{% else %}#f5f5f7{% endif %}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <title>{% block title %}Career Compass{% endblock %} · Career Compass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="theme-{{ ui_theme }} accent-{{ ui_accent }}" data-accent="{{ ui_accent }}" style="--accent: {{ palette.accent }}; --accent-deep: {{ palette.deep }}; --accent-soft: {{ palette.soft }}; --accent-glow: {{ palette.glow }}; --accent-on: {{ palette.on_accent }}; --accent-on-dark: {{ palette.on_accent_dark }};">
+  <div class="app-shell">
+    {% if user %}
+    <aside class="sidebar">
+      <a class="brand" href="{{ url_for('home') }}"><span class="brand-mark">C</span><span>career<span class="brand-light">compass</span></span></a>
+      <p class="nav-label">YOUR SPACE</p>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}"><span class="nav-icon">⌂</span>Overview</a>
+        <a class="nav-link {% if request.endpoint in ['assessment', 'results'] %}active{% endif %}" href="{{ url_for('assessment') }}"><span class="nav-icon">◎</span>Discover careers</a>
+        <a class="nav-link {% if request.endpoint == 'careers' %}active{% endif %}" href="{{ url_for('careers') }}"><span class="nav-icon">✺</span>Explore jobs</a>
+        <a class="nav-link {% if request.endpoint == 'roadmap' %}active{% endif %}" href="{{ url_for('roadmap') }}"><span class="nav-icon">↗</span>My roadmap</a>
+        <a class="nav-link {% if request.endpoint == 'tasks' %}active{% endif %}" href="{{ url_for('tasks') }}"><span class="nav-icon">▢</span>Daily tasks</a>
+        <a class="nav-link {% if request.endpoint in ['learning_tests', 'start_learning_test', 'take_learning_test', 'submit_learning_test', 'learning_test_analysis'] %}active{% endif %}" href="{{ url_for('learning_tests') }}"><span class="nav-icon">◷</span>Test & review</a>
+        <a class="nav-link {% if request.endpoint == 'progress_page' %}active{% endif %}" href="{{ url_for('progress_page') }}"><span class="nav-icon">▥</span>Progress</a>
+        <a class="nav-link {% if request.endpoint == 'career_insights' %}active{% endif %}" href="{{ url_for('career_insights') }}"><span class="nav-icon">◷</span>Career outlook</a>
+        <a class="nav-link {% if request.endpoint == 'mentor' %}active{% endif %}" href="{{ url_for('mentor') }}"><span class="nav-icon">✳</span>Career mentor</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note"><span class="note-spark">✦</span><p>Your future is a direction, not a destination.</p><span class="note-caption">Keep exploring at your own pace.</span></div>
+        <a class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}"><span class="nav-icon">◉</span>My profile</a>
+        <div class="user-chip"><span class="avatar">{{ user.display_name[:1]|upper }}</span><span><strong>{{ user.display_name }}</strong><small>{{ user.email }}</small></span><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="signout-button" type="submit" aria-label="Sign out">↗</button></form></div>
+      </div>
+    </aside>
+    {% endif %}
+    <main class="main-content {% if not user %}auth-main{% endif %}">
+      {% if user %}
+      <header class="topbar"><span class="breadcrumb">Your space <span>/</span> {% block breadcrumb %}Overview{% endblock %}</span><div class="topbar-right"><span class="topbar-date">{{ today }}</span><a class="streak-pill" href="{{ url_for('profile') }}">🔥 <strong>{{ current_progress().streak }}</strong> day streak</a></div></header>
+      <p class="motivation-quote"><span>✦</span> {{ motivation_quote }}</p>
+      {% else %}
+      <header class="auth-topbar"><a class="brand" href="{{ url_for('login') }}"><span class="brand-mark">C</span><span>career<span class="brand-light">compass</span></span></a><span>Find a direction that feels like yours.</span></header>
+      {% endif %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash flash-{{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+      {% if user %}<footer class="footer">Career Compass <span>·</span> Built with care by Gursimran Kataria, Rohit Dhir &amp; Gurnek Singh</footer>{% else %}<footer class="footer">Career Compass <span>·</span> A project by Gursimran Kataria, Rohit Dhir &amp; Gurnek Singh</footer>{% endif %}
+    </main>
+  </div>
+</body>
+</html>

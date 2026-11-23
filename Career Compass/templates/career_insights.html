@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Career outlook{% endblock %}
+{% block breadcrumb %}Career outlook{% endblock %}
+{% block content %}
+<section class="page-intro"><p class="eyebrow">GLOBAL CONTEXT · {{ country_name|upper }} DATA</p><h1>See the bigger <span>picture.</span></h1><p class="muted">Explore current demand, earnings, training, and work settings for {{ career.title }}—with country and global context separated and sources attached.</p></section>
+<section class="panel market-career-card"><span class="career-icon">{{ career.icon }}</span><div><p class="eyebrow">{{ career.category }}</p><h2>{{ career.title }}</h2><p class="muted">{{ career.description }}</p></div><a class="button button-outline" href="{{ url_for('careers') }}">Compare careers <span>→</span></a></section>
+<section class="panel market-career-brief" aria-label="Career-specific starting points">
+  <div><p class="eyebrow">STRENGTHS TO BUILD</p><ul>{% for strength in career.strengths[:3] %}<li>{{ strength }}</li>{% endfor %}</ul></div>
+  <div><p class="eyebrow">A FIRST EXPLORATION STEP</p><p>{{ career.first_step }}</p></div>
+  <div><p class="eyebrow">REGION IN THIS REPORT</p><p>{{ country_name }}; worldwide evidence is labeled separately.</p></div>
+</section>
+<section class="market-snapshot-grid" aria-label="Career market information categories">
+  <article class="panel market-snapshot"><span class="market-icon">◎</span><p class="eyebrow">WORLDWIDE SCOPE</p><h2>Demand &amp; geography</h2><p class="muted">The report distinguishes global and {{ country_name }} evidence, current workforce data, hiring sectors, and forecasts.</p></article>
+  <article class="panel market-snapshot"><span class="market-icon">¤</span><p class="eyebrow">EARNINGS</p><h2>Pay &amp; income</h2><p class="muted">Sourced pay figures are labeled with year, currency, pay period, statistic type, and career stage when available.</p></article>
+  <article class="panel market-snapshot"><span class="market-icon">⌁</span><p class="eyebrow">TYPICAL WORK</p><h2>Duties &amp; conditions</h2><p class="muted">Explore common tasks, tools, work settings, schedules, team interaction, and physical or emotional demands.</p></article>
+  <article class="panel market-snapshot"><span class="market-icon">↗</span><p class="eyebrow">ENTRY &amp; PROGRESSION</p><h2>Routes into the role</h2><p class="muted">See typical training, beginner skills, entry roles, licenses, credentials, and progression when reliable sources cover them.</p></article>
+</section>
+<section class="panel market-report-panel">
+  <div class="panel-heading"><div><p class="eyebrow">SOURCE-CITED MARKET RESEARCH</p><h2>Latest outlook for {{ career.title }}</h2></div><span class="heading-mark">⌖</span></div>
+  {% if insight %}
+  <p class="market-updated">Research updated <time>{{ insight.updated_at[:10] }} UTC</time> · Region: {{ country_name }} · {% if insight.stale %}<strong>Saved report is more than 7 days old.</strong>{% else %}Current cached report{% endif %}</p>
+  <div class="market-report-text">{{ insight.report }}</div>
+  {% if insight.sources %}<h3 class="market-source-heading">Cited sources</h3><ul class="market-source-list">{% for source in insight.sources %}<li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }} <span aria-hidden="true">↗</span></a></li>{% endfor %}</ul>{% endif %}
+  {% else %}
+  <div class="market-empty"><span class="market-icon">⌕</span><h3>No live report saved yet</h3><p class="muted">The career-specific profile above is available now. A detailed scope, earnings, work, and entry report requires live, cited research; Career Compass will not guess figures or requirements.</p></div>
+  {% endif %}
+  {% if meta_api_available %}<form method="post" action="{{ url_for('refresh_career_insights') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="career" value="{{ career.id }}"><button class="button button-dark" type="submit">{% if insight %}Refresh detailed outlook{% else %}Research detailed outlook{% endif %} <span>↻</span></button><p class="market-cost-note">Uses the configured paid Meta Model API and web search to research this career and region. Only the career title, category, description, region, and related strengths are sent. The report can contain errors; verify figures and requirements in the cited original sources.</p></form>{% else %}<p class="market-cost-note">Live research is unavailable on this server. An administrator can set the <code>MODEL_API_KEY</code> secret. The career profile and linked official sources remain available.</p>{% endif %}
+</section>
+<section class="panel market-sources-panel"><div class="panel-heading"><div><p class="eyebrow">CHECK PRIMARY DATA</p><h2>Trusted starting points</h2></div></div><div class="market-reference-list">{% for source in research_sources %}<a href="{{ source.url }}" target="_blank" rel="noopener noreferrer"><strong>{{ source.title }} <span aria-hidden="true">↗</span></strong><small>{{ source.description }}</small></a>{% endfor %}</div></section>
+<p class="disclaimer market-disclaimer">Career Compass separates global context from country-specific evidence. Earnings and outlook vary by seniority, specialization, employer, currency, and methodology. Meta-generated summaries are not audited forecasts; verify important figures with the linked original source and local professional or licensing bodies.</p>
+{% endblock %}
